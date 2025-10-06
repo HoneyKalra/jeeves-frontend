@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* in your index.css or global.css */
+
+/* .hide-scrollbar::-webkit-scrollbar {
+  display: none; 
+} */
+
+/*firebox safari*/
+/* .hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+} */
+/* Thin scrollbar like ChatGPT */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent; /* or #0f172a if you want it blended with your sidebar */
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.6); /* gray-500 with opacity */
+  border-radius: 9999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.8);
+}
+
+/* For Firefox */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.6) transparent;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
