@@ -227,6 +227,57 @@ export default function AskJeevesHome() {
     try {
       // Ask for microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (!voiceMode) {
+        recognitionRef.current?.stop();
+        return;
+      }
+
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
+
+      const rec = new SpeechRecognition();
+      rec.lang = "en-US";
+      // by me
+      rec.continuous = true;
+      // by me
+      rec.interimResults = true;
+      let finalTranscript = "";
+
+      rec.onstart = () => setListening(true);
+
+      rec.onresult = (evt) => {
+        let interim = "";
+        for (let i = 0; i < evt.results.length; i++) {
+          const r = evt.results[i];
+          if (r.isFinal) finalTranscript += r[0].transcript;
+          else interim += r[0].transcript;
+        }
+        const text = finalTranscript || interim;
+        setTranscript(text);
+        setQuery(text);
+      };
+
+      rec.onend = () => {
+        setListening(false);
+        if (finalTranscript.trim()) {
+          handleAsk(finalTranscript);
+          setShowVoiceModal(false);
+        } else if (voiceMode) {
+          try {
+            rec.start();
+          } catch (err) {
+            console.error("Speech recoginition restart error", err);
+          }
+        }
+      };
+
+      recognitionRef.current = rec;
+      try {
+        rec.start();
+      } catch (err) {
+        console.error("SpeechRecognition start error:", err);
+      }
     } catch (err) {
       console.error("Microphone access denied:", err);
       toast.error("Please enable microphone access to use voice mode.");
@@ -287,60 +338,59 @@ export default function AskJeevesHome() {
   }, []);
 
   //voice mode feature//
-  useEffect(() => {
-    if (!voiceMode) {
-      recognitionRef.current?.stop();
-      return;
-    }
+  // useEffect(() => {
+  //   if (!voiceMode) {
+  //     recognitionRef.current?.stop();
+  //     return;
+  //   }
 
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+  //   const SpeechRecognition =
+  //     window.SpeechRecognition || window.webkitSpeechRecognition;
+  //   if (!SpeechRecognition) return;
 
-    const rec = new SpeechRecognition();
-    rec.lang = "en-US";
-    // by me
-     rec.continuous = true;
-    // by me 
-    rec.interimResults = true;
-    let finalTranscript = "";
+  //   const rec = new SpeechRecognition();
+  //   rec.lang = "en-US";
+  //   // by me
+  //   rec.continuous = true;
+  //   // by me
+  //   rec.interimResults = true;
+  //   let finalTranscript = "";
 
-    rec.onstart = () => setListening(true);
+  //   rec.onstart = () => setListening(true);
 
-    rec.onresult = (evt) => {
-      let interim = "";
-      for (let i = 0; i < evt.results.length; i++) {
-        const r = evt.results[i];
-        if (r.isFinal) finalTranscript += r[0].transcript;
-        else interim += r[0].transcript;
-      }
-      const text = finalTranscript || interim;
-      setTranscript(text);
-      setQuery(text);
-    };
+  //   rec.onresult = (evt) => {
+  //     let interim = "";
+  //     for (let i = 0; i < evt.results.length; i++) {
+  //       const r = evt.results[i];
+  //       if (r.isFinal) finalTranscript += r[0].transcript;
+  //       else interim += r[0].transcript;
+  //     }
+  //     const text = finalTranscript || interim;
+  //     setTranscript(text);
+  //     setQuery(text);
+  //   };
 
-    rec.onend = () => {
-      setListening(false);
-      if (finalTranscript.trim()) {
-        handleAsk(finalTranscript);
-        setShowVoiceModal(false);
-      }else if(voiceMode){
-        try {
-          rec.start();
+  //   rec.onend = () => {
+  //     setListening(false);
+  //     if (finalTranscript.trim()) {
+  //       handleAsk(finalTranscript);
+  //       setShowVoiceModal(false);
+  //     } else if (voiceMode) {
+  //       try {
+  //         rec.start();
+  //       } catch (err) {
+  //         console.error("Speech recoginition restart error", err);
+  //       }
+  //     }
+  //   };
 
-        }catch(err){
-          console.error("Speech recoginition restart error", err)
-        }
-      }
-    };
-
-    recognitionRef.current = rec;
-    try {
-      rec.start();
-    } catch (err) {
-      console.error("SpeechRecognition start error:", err);
-    }
-  }, [voiceMode]);
+  //   recognitionRef.current = rec;
+  //   try {
+  //     rec.start();
+  //   } catch (err) {
+  //     console.error("SpeechRecognition start error:", err);
+  //   }
+  // }, [voiceMode]);
 
   // Reset query after answer//
   useEffect(() => {
@@ -653,7 +703,7 @@ export default function AskJeevesHome() {
           <div className=" flex-1   flex flex-col  items-center justify-center min-h-screen  p-6 h-[100%]">
             <div className="min-h-screen -mt-4 lg:pl-64 flex flex-col items-center justify-center pb-10  w-full  ">
               {/* Avatar Top Right */}
-              
+
               <div className="fixed top-4 right-6 z-50 menu-container">
                 <div className="relative">
                   {/* Avatar Circle */}
