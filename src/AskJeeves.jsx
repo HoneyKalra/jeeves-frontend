@@ -225,6 +225,7 @@ export default function AskJeevesHome() {
 
   const handleDictateClick = async () => {
     try {
+      console.log("hii");
       // Ask for microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true });
       if (!voiceMode) {
